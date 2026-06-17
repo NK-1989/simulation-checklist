@@ -397,6 +397,43 @@
   .abcde-D .subcategory-title { border-color: #7b1fa2; }
   .abcde-E .subcategory-title { border-color: #388e3c; }
 
+  /* ルールカード */
+  .rule-cards { display: flex; flex-direction: column; gap: 10px; padding: 10px 0; }
+  .rule-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 12px;
+    border-left: 4px solid var(--primary);
+  }
+  .rule-card:nth-child(2) { border-color: #00897b; }
+  .rule-card:nth-child(3) { border-color: #f57c00; }
+  .rule-card:nth-child(4) { border-color: #e91e63; }
+  .rule-card:nth-child(5) { border-color: #7b1fa2; }
+  .rule-card:nth-child(6) { border-color: #388e3c; }
+  .rule-card:nth-child(7) { border-color: #5d4037; }
+  .rule-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    min-width: 96px;
+    padding-top: 1px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .rule-card-body {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .rule-card-body .ng {
+    color: var(--danger);
+    font-weight: 600;
+  }
+
   .phase-complete-banner {
     display: none;
     background: var(--success);
@@ -432,7 +469,6 @@
   <button class="tab-btn" data-tab="pre">受け入れ準備<span class="badge" id="b1">-</span></button>
   <button class="tab-btn" data-tab="arrival">病着〜ROSC<span class="badge" id="b2">-</span></button>
   <button class="tab-btn" data-tab="rosc">ROSC後<span class="badge" id="b3">-</span></button>
-  <button class="tab-btn" data-tab="equip">物品<span class="badge" id="b4">-</span></button>
 </div>
 
 <!-- ============ タブ0: ブリーフィング ============ -->
@@ -452,41 +488,65 @@
 
   <div class="section">
     <div class="section-header">
-      <h2>ブリーフィング確認事項</h2>
-      <span class="tag">5分</span>
+      <h2>ブリーフィングルール</h2>
+      <span class="tag">7項目</span>
+    </div>
+    <div class="section-body">
+      <div class="rule-cards">
+        <div class="rule-card">
+          <div class="rule-card-title">正確なアルゴリズム</div>
+          <div class="rule-card-body">今できなくても今日学びましょう<br>カンペは大いにOK</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">円滑なコミュニケーション</div>
+          <div class="rule-card-body">大きな声ではっきりと<br>Closed Communicationを意識</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">実践の意識</div>
+          <div class="rule-card-body">本番は練習のように、練習は本番のように<br>普段の自分のスタイルも使ってOK</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">心理的・社会的安全性</div>
+          <div class="rule-card-body">お互いに尊敬の気持ちを忘れず<br>年齢上下は関係なし</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">建設的な意見</div>
+          <div class="rule-card-body">非難の場ではありません<br>ディスカッションは建設的に<br>大いに失敗してください</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">助け合いの意識</div>
+          <div class="rule-card-body">困っていたらみんなで協力<br><span class="ng">×リーダーがすべてを決めなければならない</span></div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">秘密の厳守</div>
+          <div class="rule-card-body">ここで起きたことはここだけに</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>進行ルール確認</h2>
+      <span class="tag">確認</span>
     </div>
     <div class="section-progress">
       <div class="section-progress-bar"><div class="section-progress-fill" id="sp-briefing-rules"></div></div>
-      <span id="sl-briefing-rules">0/6</span>
+      <span id="sl-briefing-rules">0/3</span>
     </div>
     <div class="section-body">
-      <div class="subcategory">
-        <div class="subcategory-title">ルール確認</div>
-        <label class="check-item" data-section="briefing-rules">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">正確なアルゴリズム（カンペOK）</span>
-        </label>
-        <label class="check-item" data-section="briefing-rules">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">円滑なコミュニケーション（大きな声・Closed Loop）</span>
-        </label>
-        <label class="check-item" data-section="briefing-rules">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">心理的・社会的安全性（非難なし、相互尊重）</span>
-        </label>
-        <label class="check-item" data-section="briefing-rules">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">シミュレータで表現できない情報はファシリテーターが口頭で補足</span>
-        </label>
-        <label class="check-item" data-section="briefing-rules">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">処置・行動は声に出す</span>
-        </label>
-        <label class="check-item" data-section="briefing-rules">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">秘密の厳守（ここで起きたことはここだけに）</span>
-        </label>
-      </div>
+      <label class="check-item" data-section="briefing-rules">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">シミュレータで表現できない情報はファシリテーターが口頭で補足</span>
+      </label>
+      <label class="check-item" data-section="briefing-rules">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">処置・行動は声に出す</span>
+      </label>
+      <label class="check-item" data-section="briefing-rules">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">準備してある物品はいつでも使用可（ないものはある体で使用可）</span>
+      </label>
     </div>
   </div>
 
@@ -1184,8 +1244,8 @@
   </div>
 </div>
 
-<!-- ============ タブ4: 物品チェックリスト ============ -->
-<div class="tab-content" id="tab-equip">
+<!-- タブ4（物品）は削除 -->
+<div class="tab-content" id="tab-equip" style="display:none!important">
 
   <div class="phase-complete-banner" id="done-equip">✅ 物品準備完了！</div>
 
@@ -1526,8 +1586,7 @@ function getTabSections() {
     briefing: ['briefing-rules'],
     pre: ['pre-goal', 'pre-role', 'pre-equip', 'pre-comm'],
     arrival: ['arr-A', 'arr-B', 'arr-C', 'arr-D', 'arr-E', 'arr-other'],
-    rosc: ['rosc-A', 'rosc-B', 'rosc-C', 'rosc-D', 'rosc-E', 'rosc-other', 'rosc-device'],
-    equip: ['eq-monitor', 'eq-airway', 'eq-intub', 'eq-vent', 'eq-circ', 'eq-drug', 'eq-exam', 'eq-temp', 'eq-postrosc', 'eq-team', 'eq-sim']
+    rosc: ['rosc-A', 'rosc-B', 'rosc-C', 'rosc-D', 'rosc-E', 'rosc-other', 'rosc-device']
   };
 }
 
@@ -1535,13 +1594,10 @@ const tabSectionMap = {
   'briefing-rules': 'briefing',
   'pre-goal': 'pre', 'pre-role': 'pre', 'pre-equip': 'pre', 'pre-comm': 'pre',
   'arr-A': 'arrival', 'arr-B': 'arrival', 'arr-C': 'arrival', 'arr-D': 'arrival', 'arr-E': 'arrival', 'arr-other': 'arrival',
-  'rosc-A': 'rosc', 'rosc-B': 'rosc', 'rosc-C': 'rosc', 'rosc-D': 'rosc', 'rosc-E': 'rosc', 'rosc-other': 'rosc', 'rosc-device': 'rosc',
-  'eq-monitor': 'equip', 'eq-airway': 'equip', 'eq-intub': 'equip', 'eq-vent': 'equip',
-  'eq-circ': 'equip', 'eq-drug': 'equip', 'eq-exam': 'equip', 'eq-temp': 'equip',
-  'eq-postrosc': 'equip', 'eq-team': 'equip', 'eq-sim': 'equip'
+  'rosc-A': 'rosc', 'rosc-B': 'rosc', 'rosc-C': 'rosc', 'rosc-D': 'rosc', 'rosc-E': 'rosc', 'rosc-other': 'rosc', 'rosc-device': 'rosc'
 };
 
-const tabBadgeIds = { briefing: 'b0', pre: 'b1', arrival: 'b2', rosc: 'b3', equip: 'b4' };
+const tabBadgeIds = { briefing: 'b0', pre: 'b1', arrival: 'b2', rosc: 'b3' };
 
 function updateSection(sectionId) {
   const items = document.querySelectorAll(`[data-section="${sectionId}"]`);
