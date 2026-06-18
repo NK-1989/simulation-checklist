@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>院外心停止シミュレーション チェックリスト</title>
+<style>
+  :root {
+    --primary: #1a73e8;
+    --primary-dark: #1557b0;
+    --success: #34a853;
+    --warning: #fbbc04;
+    --danger: #ea4335;
+    --bg: #f8f9fa;
+    --card: #ffffff;
+    --text: #202124;
+    --muted: #5f6368;
+    --border: #dadce0;
+    --radius: 12px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-bottom: 80px;
+  }
+
+  /* ヘッダー */
+  header {
+    background: var(--primary);
+    color: #fff;
+    padding: 14px 16px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  header h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  header p {
+    font-size: 12px;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+
+  /* 全体進捗バー */
+  .total-progress {
+    background: rgba(255,255,255,0.25);
+    border-radius: 4px;
+    height: 6px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .total-progress-fill {
+    background: #fff;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+  .progress-label {
+    font-size: 11px;
+    opacity: 0.9;
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  /* タブナビ */
+  .tab-nav {
+    display: flex;
+    overflow-x: auto;
+    background: #fff;
+    border-bottom: 2px solid var(--border);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    position: sticky;
+    top: 88px;
+    z-index: 99;
+  }
+  .tab-nav::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+  .tab-btn .badge {
+    display: inline-block;
+    background: var(--border);
+    color: var(--muted);
+    border-radius: 10px;
+    font-size: 10px;
+    padding: 1px 6px;
+    margin-left: 4px;
+    font-weight: 700;
+  }
+  .tab-btn.active .badge {
+    background: var(--primary);
+    color: #fff;
+  }
+  .tab-btn.complete .badge {
+    background: var(--success);
+    color: #fff;
+  }
+
+  /* コンテンツ */
+  .tab-content { display: none; padding: 12px; }
+  .tab-content.active { display: block; }
+
+  /* セクション */
+  .section {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #e8f0fe, #f0f4ff);
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-header h2 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary-dark);
+  }
+  .section-header .tag {
+    font-size: 11px;
+    background: var(--primary);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .section-header .tag.red { background: var(--danger); }
+  .section-header .tag.green { background: var(--success); }
+  .section-header .tag.orange { background: #f57c00; }
+
+  .section-body { padding: 0 14px 10px; }
+
+  /* サブカテゴリ */
+  .subcategory {
+    padding-top: 10px;
+  }
+  .subcategory-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-left: 3px solid var(--primary);
+    padding-left: 8px;
+    margin-bottom: 6px;
+  }
+  .subcategory-title.red { border-color: var(--danger); }
+  .subcategory-title.green { border-color: var(--success); }
+  .subcategory-title.orange { border-color: #f57c00; }
+  .subcategory-title.purple { border-color: #9c27b0; }
+
+  /* チェック項目 */
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 9px 4px;
+    border-bottom: 1px solid #f1f3f4;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0,0,0,0.05);
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:active { background: #f0f4ff; }
+  .check-item.checked { opacity: 0.6; }
+  .check-item input[type="checkbox"] { display: none; }
+  .check-box {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-right: 10px;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .check-item.checked .check-box {
+    background: var(--success);
+    border-color: var(--success);
+  }
+  .check-item.checked .check-box::after {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 9px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg) translateY(-1px);
+  }
+  .check-text {
+    font-size: 14px;
+    color: var(--text);
+    flex: 1;
+  }
+  .check-item.checked .check-text {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+
+  /* セクション進捗 */
+  .section-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: #f8f9fa;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .section-progress-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .section-progress-fill {
+    height: 100%;
+    background: var(--success);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  /* 情報ボックス */
+  .info-box {
+    background: #fff8e1;
+    border-left: 4px solid var(--warning);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 12px;
+    font-size: 13px;
+    margin: 8px 0;
+    color: #5f4f00;
+  }
+  .info-box.blue {
+    background: #e8f0fe;
+    border-color: var(--primary);
+    color: #1a3a6b;
+  }
+  .info-box.red {
+    background: #fce8e6;
+    border-color: var(--danger);
+    color: #7c1a15;
+  }
+
+  /* リセットボタン */
+  .reset-section {
+    text-align: center;
+    padding: 16px;
+  }
+  .reset-btn {
+    background: transparent;
+    border: 1.5px solid var(--danger);
+    color: var(--danger);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .reset-btn:active { background: #fce8e6; }
+
+  /* フローティングリセット */
+  .fab {
+    position: fixed;
+    bottom: 20px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 50%;
+    border: none;
+    font-size: 20px;
+    box-shadow: 0 4px 14px rgba(26,115,232,0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+  }
+
+  /* モーダル */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 300;
+    align-items: flex-end;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 18px 18px 0 0;
+    padding: 20px 16px 32px;
+    width: 100%;
+    max-height: 60vh;
+  }
+  .modal h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .modal-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .modal-btn.danger { background: var(--danger); color: #fff; }
+  .modal-btn.cancel { background: var(--border); color: var(--text); }
+
+  /* タイマー */
+  .timer-box {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .timer-display {
+    font-size: 42px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    letter-spacing: 2px;
+  }
+  .timer-display.warning { color: var(--warning); }
+  .timer-display.danger { color: var(--danger); }
+  .timer-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .timer-controls { display: flex; gap: 8px; justify-content: center; }
+  .timer-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .timer-btn.start { background: var(--success); color: #fff; }
+  .timer-btn.stop { background: var(--danger); color: #fff; }
+  .timer-btn.reset { background: var(--border); color: var(--text); }
+
+  /* ABCDE カラー */
+  .abcde-A .subcategory-title { border-color: #e53935; }
+  .abcde-B .subcategory-title { border-color: #1e88e5; }
+  .abcde-C .subcategory-title { border-color: #e91e63; }
+  .abcde-D .subcategory-title { border-color: #7b1fa2; }
+  .abcde-E .subcategory-title { border-color: #388e3c; }
+
+  /* ルールカード */
+  .rule-cards { display: flex; flex-direction: column; gap: 10px; padding: 10px 0; }
+  .rule-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 12px;
+    border-left: 4px solid var(--primary);
+  }
+  .rule-card:nth-child(2) { border-color: #00897b; }
+  .rule-card:nth-child(3) { border-color: #f57c00; }
+  .rule-card:nth-child(4) { border-color: #e91e63; }
+  .rule-card:nth-child(5) { border-color: #7b1fa2; }
+  .rule-card:nth-child(6) { border-color: #388e3c; }
+  .rule-card:nth-child(7) { border-color: #5d4037; }
+  .rule-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    min-width: 96px;
+    padding-top: 1px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .rule-card-body {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .rule-card-body .ng {
+    color: var(--danger);
+    font-weight: 600;
+  }
+
+  .phase-complete-banner {
+    display: none;
+    background: var(--success);
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 10px;
+    animation: pop 0.3s ease;
+  }
+  .phase-complete-banner.show { display: block; }
+  @keyframes pop {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+    <a href="index.html" style="color:#fff;text-decoration:none;font-size:22px;line-height:1;padding:0 6px;border-radius:6px;background:rgba(255,255,255,0.2)">&#8592;</a>
+    <h1>院外心停止シミュレーション ①</h1>
+  </div>
+  <p>1歳0か月 男児 10kg ／ 目撃あり院外CPA → ROSC</p>
+  <div class="total-progress">
+    <div class="total-progress-fill" id="totalFill" style="width:0%"></div>
+  </div>
+  <div class="progress-label" id="totalLabel">0 / 0 完了</div>
+</header>
+
+<div class="tab-nav" id="tabNav">
+  <button class="tab-btn active" data-tab="briefing">ブリーフィング<span class="badge" id="b0">-</span></button>
+  <button class="tab-btn" data-tab="pre">受け入れ準備<span class="badge" id="b1">-</span></button>
+  <button class="tab-btn" data-tab="arrival">病着〜ROSC<span class="badge" id="b2">-</span></button>
+  <button class="tab-btn" data-tab="rosc">ROSC後<span class="badge" id="b3">-</span></button>
+</div>
+
+<!-- ============ タブ0: ブリーフィング ============ -->
+<div class="tab-content active" id="tab-briefing">
+
+  <div class="timer-box">
+    <div class="timer-label">ブリーフィング目安時間</div>
+    <div class="timer-display" id="timer0">05:00</div>
+    <div class="timer-controls">
+      <button class="timer-btn start" onclick="startTimer(0,5)">開始</button>
+      <button class="timer-btn stop" onclick="stopTimer(0)">停止</button>
+      <button class="timer-btn reset" onclick="resetTimer(0,5)">リセット</button>
+    </div>
+  </div>
+
+  <div class="phase-complete-banner" id="done-briefing">✅ このフェーズ完了！</div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>ブリーフィングルール</h2>
+      <span class="tag">7項目</span>
+    </div>
+    <div class="section-body">
+      <div class="rule-cards">
+        <div class="rule-card">
+          <div class="rule-card-title">正確なアルゴリズム</div>
+          <div class="rule-card-body">今できなくても今日学びましょう<br>カンペは大いにOK</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">円滑なコミュニケーション</div>
+          <div class="rule-card-body">大きな声ではっきりと<br>Closed Communicationを意識</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">実践の意識</div>
+          <div class="rule-card-body">本番は練習のように、練習は本番のように<br>普段の自分のスタイルも使ってOK</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">心理的・社会的安全性</div>
+          <div class="rule-card-body">お互いに尊敬の気持ちを忘れず<br>年齢上下は関係なし</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">建設的な意見</div>
+          <div class="rule-card-body">非難の場ではありません<br>ディスカッションは建設的に<br>大いに失敗してください</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">助け合いの意識</div>
+          <div class="rule-card-body">困っていたらみんなで協力<br><span class="ng">×リーダーがすべてを決めなければならない</span></div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-card-title">秘密の厳守</div>
+          <div class="rule-card-body">ここで起きたことはここだけに</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>進行ルール確認</h2>
+      <span class="tag">確認</span>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-briefing-rules"></div></div>
+      <span id="sl-briefing-rules">0/3</span>
+    </div>
+    <div class="section-body">
+      <label class="check-item" data-section="briefing-rules">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">シミュレータで表現できない情報はファシリテーターが口頭で補足</span>
+      </label>
+      <label class="check-item" data-section="briefing-rules">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">処置・行動は声に出す</span>
+      </label>
+      <label class="check-item" data-section="briefing-rules">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">準備してある物品はいつでも使用可（ないものはある体で使用可）</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>現場設定・症例設定</h2>
+    </div>
+    <div class="section-body">
+      <div class="info-box blue">
+        <b>時間帯：</b>夜勤帯｜<b>場所：</b>救急外来 初療室1<br>
+        <b>初期人員：</b>小児内科医1、成人救急医1、新生児科医1、看護師2<br>
+        <b>追加：</b>小児内科応援医1〜2、研修医1〜2、当直師長
+      </div>
+      <div class="info-box">
+        <b>症例：</b>1歳0か月 男児 身長80cm 体重10kg<br>
+        17:15頃 哺乳後に嘔吐・むせ込み → 顔色不良・反応消失 → 救急要請<br>
+        救急隊からCPR指示あり → Bystander CPR開始 → 直入搬送<br>
+        <b>入電 18:15 ／ 接触 18:20 ／ 病着 18:35</b>
+      </div>
+    </div>
+  </div>
+
+  <div class="reset-section">
+    <button class="reset-btn" onclick="resetTab('briefing')">このタブをリセット</button>
+  </div>
+</div>
+
+<!-- ============ タブ1: 受け入れ準備 ============ -->
+<div class="tab-content" id="tab-pre">
+
+  <div class="timer-box">
+    <div class="timer-label">受け入れ準備目安時間</div>
+    <div class="timer-display" id="timer1">10:00</div>
+    <div class="timer-controls">
+      <button class="timer-btn start" onclick="startTimer(1,10)">開始</button>
+      <button class="timer-btn stop" onclick="stopTimer(1)">停止</button>
+      <button class="timer-btn reset" onclick="resetTimer(1,10)">リセット</button>
+    </div>
+  </div>
+
+  <div class="phase-complete-banner" id="done-pre">✅ このフェーズ完了！</div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>行動目標：各職種</h2>
+    </div>
+    <div class="section-body">
+      <div class="subcategory">
+        <div class="subcategory-title">医師・看護師 共通</div>
+        <label class="check-item" data-section="pre-goal">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">病着までに人員を確保できる</span>
+        </label>
+        <label class="check-item" data-section="pre-goal">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">蘇生に必要な物品を想定・準備できる</span>
+        </label>
+        <label class="check-item" data-section="pre-goal">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">必要な検査・治療を想定できる</span>
+        </label>
+      </div>
+      <div class="subcategory">
+        <div class="subcategory-title">チーム目標</div>
+        <label class="check-item" data-section="pre-goal">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">能力に見合った人員配置ができる</span>
+        </label>
+        <label class="check-item" data-section="pre-goal">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">各メンバーが役割を認識できる</span>
+        </label>
+        <label class="check-item" data-section="pre-goal">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">良好なコミュニケーションを意識し行動できる</span>
+        </label>
+        <label class="check-item" data-section="pre-goal">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">患者病着までにメンバー内で情報共有する</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>人員確保・役割配置</h2>
+      <span class="tag">確認</span>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-pre-role"></div></div>
+      <span id="sl-pre-role">0/8</span>
+    </div>
+    <div class="section-body">
+      <label class="check-item" data-section="pre-role">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">リーダー 1名（小児内科 or 救急医）</span>
+      </label>
+      <label class="check-item" data-section="pre-role">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">気道・呼吸 1名（Dr. or Ns.）</span>
+      </label>
+      <label class="check-item" data-section="pre-role">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">胸骨圧迫 2名（Dr. or Ns.）</span>
+      </label>
+      <label class="check-item" data-section="pre-role">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">処置・DC担当 1名（Dr.）</span>
+      </label>
+      <label class="check-item" data-section="pre-role">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">薬剤調整 1名（Ns.）</span>
+      </label>
+      <label class="check-item" data-section="pre-role">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">記録係 1名（Ns.）</span>
+      </label>
+      <label class="check-item" data-section="pre-role">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">検査オーダー 1名（Dr.）</span>
+      </label>
+      <label class="check-item" data-section="pre-role">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">家族対応 1名（Ns.）</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>物品準備</h2>
+      <span class="tag orange">事前確認</span>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-pre-equip"></div></div>
+      <span id="sl-pre-equip">0/16</span>
+    </div>
+    <div class="section-body">
+      <div class="subcategory">
+        <div class="subcategory-title">モニタリング</div>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">心電図モニター / SpO₂ / EtCO₂</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">除細動器（小児パッド装着・4 J/kg設定）</span>
+        </label>
+      </div>
+      <div class="subcategory">
+        <div class="subcategory-title">気道・呼吸</div>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">BVM（小児）＋マスク（乳児サイズ）</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">酸素流量計・酸素チューブ</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">吸引器＋吸引チューブ（10–12Fr）</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">喉頭鏡（マックグラス／ブレード1）</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">挿管チューブ：ID 3.5 カフ付き／3.5・4.0 カフなし</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">スタイレット＋固定テープ</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">胃管（6–8Fr）＋シリンジ</span>
+        </label>
+      </div>
+      <div class="subcategory">
+        <div class="subcategory-title">循環・ルート確保</div>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">EZ-IO（骨髄針15mm・コネクタ）</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">末梢IV（24G）＋三方活栓</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">生食500mL（メイン）</span>
+        </label>
+      </div>
+      <div class="subcategory">
+        <div class="subcategory-title">薬剤</div>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">アドレナリン1mL＋生食9mLで希釈準備</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">後押し生食</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">蘇生薬一覧表（10kg）印刷済み</span>
+        </label>
+      </div>
+      <div class="subcategory">
+        <div class="subcategory-title">その他</div>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">ポータブルエコー・血糖測定器・採血スピッツ</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">保温ブランケット・タオル</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">人工呼吸器の依頼・応援要請（師長・新生児科）</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <h2>チームコミュニケーション</h2>
+    </div>
+    <div class="section-body">
+      <label class="check-item" data-section="pre-comm">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">情報共有・役割確認・サマライズを行う</span>
+      </label>
+      <label class="check-item" data-section="pre-comm">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">互いを尊重した言動を行う</span>
+      </label>
+      <label class="check-item" data-section="pre-comm">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">Closed Loop Communication を行う</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="reset-section">
+    <button class="reset-btn" onclick="resetTab('pre')">このタブをリセット</button>
+  </div>
+</div>
+
+<!-- ============ タブ2: 病着〜ROSC ============ -->
+<div class="tab-content" id="tab-arrival">
+
+  <div class="timer-box">
+    <div class="timer-label">病着〜ROSC 目安時間</div>
+    <div class="timer-display" id="timer2">15:00</div>
+    <div class="timer-controls">
+      <button class="timer-btn start" onclick="startTimer(2,15)">開始</button>
+      <button class="timer-btn stop" onclick="stopTimer(2)">停止</button>
+      <button class="timer-btn reset" onclick="resetTimer(2,15)">リセット</button>
+    </div>
+  </div>
+
+  <div class="info-box red">
+    <b>目標：</b>院外CPA症例に対しABCDEアプローチで評価・治療介入を繰り返す。適切なアルゴリズムを実践。
+  </div>
+
+  <div class="phase-complete-banner" id="done-arrival">✅ このフェーズ完了！</div>
+
+  <!-- A -->
+  <div class="section abcde-A">
+    <div class="section-header">
+      <h2>🔴 A：気道（Airway）</h2>
+      <span class="tag red">口腔内残渣あり</span>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-arr-A"></div></div>
+      <span id="sl-arr-A">0/5</span>
+    </div>
+    <div class="section-body">
+      <div class="info-box">評価：口腔内は分泌物・食物残渣が多い</div>
+      <label class="check-item" data-section="arr-A">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">太い吸引チューブで口腔内吸引</span>
+      </label>
+      <label class="check-item" data-section="arr-A">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">高度な気道確保を判断</span>
+      </label>
+      <label class="check-item" data-section="arr-A">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">挿管チューブのサイズ選択（ID 3.5 カフ付き推奨）</span>
+      </label>
+      <label class="check-item" data-section="arr-A">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">CPR停止10秒以内での挿管処置</span>
+      </label>
+      <label class="check-item" data-section="arr-A">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">気管挿管成功確認（曇り・EtCO₂・胸郭挙上・聴診）</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="section abcde-B">
+    <div class="section-header">
+      <h2>🔵 B：呼吸（Breathing）</h2>
+      <span class="tag">SpO₂ 60%</span>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-arr-B"></div></div>
+      <span id="sl-arr-B">0/6</span>
+    </div>
+    <div class="section-body">
+      <div class="info-box">BVMで胸郭挙上悪い／両側肺音ごろごろ／SpO₂ 60%／自発呼吸なし</div>
+      <div class="subcategory">
+        <div class="subcategory-title">挿管前</div>
+        <label class="check-item" data-section="arr-B">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">換気回数 15:2 で実施</span>
+        </label>
+        <label class="check-item" data-section="arr-B">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">胸郭挙上の有無を確認</span>
+        </label>
+      </div>
+      <div class="subcategory">
+        <div class="subcategory-title">挿管後</div>
+        <label class="check-item" data-section="arr-B">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">適切サイズの吸引チューブで気管内吸引</span>
+        </label>
+        <label class="check-item" data-section="arr-B">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">人工呼吸器への載せ替えを考慮</span>
+        </label>
+        <label class="check-item" data-section="arr-B">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">換気回数 10回/分 に設定</span>
+        </label>
+        <label class="check-item" data-section="arr-B">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">血液ガス分析を施行</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="section abcde-C">
+    <div class="section-header">
+      <h2>🩺 C：循環（Circulation）</h2>
+      <span class="tag red">Asystole → Vf → ROSC</span>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-arr-C"></div></div>
+      <span id="sl-arr-C">0/7</span>
+    </div>
+    <div class="section-body">
+      <div class="info-box">初期Asystole → 6サイクル後リズムチェックでVf → 除細動1回でROSC</div>
+      <label class="check-item" data-section="arr-C">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">骨髄針（EZ-IO）を躊躇せず実施</span>
+      </label>
+      <label class="check-item" data-section="arr-C">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">除細動器パッドを装着</span>
+      </label>
+      <label class="check-item" data-section="arr-C">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">適切なCPR（100〜120回/分）</span>
+      </label>
+      <label class="check-item" data-section="arr-C">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">胸郭圧迫深度：胸郭1/3または5cmを目安</span>
+      </label>
+      <label class="check-item" data-section="arr-C">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">CPR中断 10秒以内</span>
+      </label>
+      <label class="check-item" data-section="arr-C">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">適切なアルゴリズム選択（非Shockable→Shockableへ移行確認）</span>
+      </label>
+      <label class="check-item" data-section="arr-C">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">FAST・Xpで心停止原因を鑑別</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="section abcde-D">
+    <div class="section-header">
+      <h2>🟣 D：神経（Disability）</h2>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-arr-D"></div></div>
+      <span id="sl-arr-D">0/3</span>
+    </div>
+    <div class="section-body">
+      <div class="info-box">JCS Ⅲ-300／GCS 3／瞳孔 4mm/4mm 対光反射緩慢／大泉門膨隆なし／BS 35</div>
+      <label class="check-item" data-section="arr-D">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">瞳孔所見を経時的に確認</span>
+      </label>
+      <label class="check-item" data-section="arr-D">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">血糖測定を行い、低血糖を補正（BS 35）</span>
+      </label>
+      <label class="check-item" data-section="arr-D">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">ROSC後けいれんの有無に気を配る</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- E -->
+  <div class="section abcde-E">
+    <div class="section-header">
+      <h2>🟢 E：体温・外傷（Exposure）</h2>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-arr-E"></div></div>
+      <span id="sl-arr-E">0/2</span>
+    </div>
+    <div class="section-body">
+      <div class="info-box">体温 35.0℃ / 外傷・外出血なし</div>
+      <label class="check-item" data-section="arr-E">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">保温する（ブランケット・タオル）</span>
+      </label>
+      <label class="check-item" data-section="arr-E">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">外傷・死斑を確認</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- その他 -->
+  <div class="section">
+    <div class="section-header">
+      <h2>血液ガス・AMPLE・チーム連携</h2>
+    </div>
+    <div class="section-body">
+      <div class="info-box red">
+        <b>血液ガス（ルート確保後7分）：</b><br>
+        pH 6.900 / pCO₂ 86 / HCO₃ 17 / BE -6 / Lac 10 / Na 130 / K 7 / iCa 1.0
+      </div>
+      <label class="check-item" data-section="arr-other">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">Closed Loop Communication を行う</span>
+      </label>
+      <label class="check-item" data-section="arr-other">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">血液ガス結果をメンバーで議論・共有</span>
+      </label>
+      <label class="check-item" data-section="arr-other">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">家族からSAMPLE聴取を行う</span>
+      </label>
+      <label class="check-item" data-section="arr-other">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">家族対応の人員配置</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><h2>AMPLE（家族聴取）</h2></div>
+    <div class="section-body">
+      <div class="info-box blue">
+        <b>A</b>（アレルギー）：なし<br>
+        <b>M</b>（内服）：なし<br>
+        <b>P</b>（既往）：正期産・正常分娩・マス正常・ワクチン定期接種進行中<br>
+        <b>L</b>（最終食事）：当日17:15頃 哺乳<br>
+        <b>E</b>（事象）：数日前から感冒症状。哺乳後に嘔吐・むせ込み→顔色不良・反応消失→救急要請
+      </div>
+    </div>
+  </div>
+
+  <div class="reset-section">
+    <button class="reset-btn" onclick="resetTab('arrival')">このタブをリセット</button>
+  </div>
+</div>
+
+<!-- ============ タブ3: ROSC後 ============ -->
+<div class="tab-content" id="tab-rosc">
+
+  <div class="timer-box">
+    <div class="timer-label">ROSC後 目安時間</div>
+    <div class="timer-display" id="timer3">10:00</div>
+    <div class="timer-controls">
+      <button class="timer-btn start" onclick="startTimer(3,10)">開始</button>
+      <button class="timer-btn stop" onclick="stopTimer(3)">停止</button>
+      <button class="timer-btn reset" onclick="resetTimer(3,10)">リセット</button>
+    </div>
+  </div>
+
+  <div class="info-box blue">
+    <b>目標：</b>ROSC後もABCDEで繰り返し評価。ICU入室または適切な施設搬送を検討。
+  </div>
+
+  <div class="phase-complete-banner" id="done-rosc">✅ このフェーズ完了！</div>
+
+  <!-- A -->
+  <div class="section">
+    <div class="section-header">
+      <h2>🔴 A：気道</h2>
+      <span class="tag red">既気管挿管</span>
+    </div>
+    <div class="section-body">
+      <label class="check-item" data-section="rosc-A">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">EtCO₂を気道モニターとして意識する</span>
+      </label>
+      <label class="check-item" data-section="rosc-A">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">挿管チューブ位置確認・固定を確認</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="section">
+    <div class="section-header">
+      <h2>🔵 B：呼吸</h2>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-rosc-B"></div></div>
+      <span id="sl-rosc-B">0/5</span>
+    </div>
+    <div class="section-body">
+      <div class="info-box">SpO₂ 90%／EtCO₂ 40%／A/C f15 PC16 PEEP5 FIO₂100% Vt40mL／胸郭挙上良好・左右差なし</div>
+      <label class="check-item" data-section="rosc-B">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">血液ガス分析を再検</span>
+      </label>
+      <label class="check-item" data-section="rosc-B">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">SpO₂ 94〜99%に適切に保つ</span>
+      </label>
+      <label class="check-item" data-section="rosc-B">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">EtCO₂ 適切に保つ（pCO₂ 35〜45 mmHg目標）</span>
+      </label>
+      <label class="check-item" data-section="rosc-B">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">年齢に応じた目標バイタル・尿量について議論</span>
+      </label>
+      <label class="check-item" data-section="rosc-B">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">搬送時の人工呼吸方法について議論</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="section">
+    <div class="section-header">
+      <h2>🩺 C：循環</h2>
+      <span class="tag red">非代償性ショック</span>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-rosc-C"></div></div>
+      <span id="sl-rosc-C">0/4</span>
+    </div>
+    <div class="section-body">
+      <div class="info-box red">HR 180bpm（洞調律）／NIBP 68/30 mmHg／皮膚色悪・末梢冷感・CRT 3秒</div>
+      <label class="check-item" data-section="rosc-C">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">非代償性ショックを認識</span>
+      </label>
+      <label class="check-item" data-section="rosc-C">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">再度FASTを施行</span>
+      </label>
+      <label class="check-item" data-section="rosc-C">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">ROSC時の心電図を記録</span>
+      </label>
+      <label class="check-item" data-section="rosc-C">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">カテコラミン持続投与を考慮</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="section">
+    <div class="section-header">
+      <h2>🟣 D：神経</h2>
+    </div>
+    <div class="section-body">
+      <div class="info-box">JCS Ⅲ-300／GCS 3／瞳孔 4mm/4mm 対光反射緩慢／大泉門膨隆なし／BS 40</div>
+      <label class="check-item" data-section="rosc-D">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">鎮静・鎮痛薬の開始について議論</span>
+      </label>
+      <label class="check-item" data-section="rosc-D">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">血糖再検・補正（BS 40）</span>
+      </label>
+      <label class="check-item" data-section="rosc-D">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">ROSC後けいれんに対してEEGモニターを考慮</span>
+      </label>
+      <label class="check-item" data-section="rosc-D">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">頭部画像評価の時期を検討</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- E -->
+  <div class="section">
+    <div class="section-header">
+      <h2>🟢 E：体温・外傷</h2>
+    </div>
+    <div class="section-body">
+      <div class="info-box">体温 38.5℃ / 外傷・外出血なし</div>
+      <label class="check-item" data-section="rosc-E">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">TTM（低体温療法）開始を検討</span>
+      </label>
+      <label class="check-item" data-section="rosc-E">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">外表写真を撮影</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- その他 -->
+  <div class="section">
+    <div class="section-header">
+      <h2>電解質・デバイス・搬送</h2>
+    </div>
+    <div class="section-body">
+      <div class="info-box red">
+        <b>血液ガス再検：</b>pH 7.120 / pCO₂ 50 / HCO₃ 17 / BE -6 / Lac 10 / Na 130 / <b>K 6</b> / iCa 1.0
+      </div>
+      <label class="check-item" data-section="rosc-other">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">Closed Loop Communication を行う</span>
+      </label>
+      <label class="check-item" data-section="rosc-other">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">血液ガス結果をメンバーで議論・共有</span>
+      </label>
+      <label class="check-item" data-section="rosc-other">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">電解質異常（高K・低Na）への介入を議論</span>
+      </label>
+      <label class="check-item" data-section="rosc-other">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">両親への説明人員を配置</span>
+      </label>
+      <div class="subcategory" style="margin-top:8px">
+        <div class="subcategory-title">追加デバイス検討</div>
+        <label class="check-item" data-section="rosc-device">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">CVライン</span>
+        </label>
+        <label class="check-item" data-section="rosc-device">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">Aライン</span>
+        </label>
+        <label class="check-item" data-section="rosc-device">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">尿カテ（6–8Fr）</span>
+        </label>
+        <label class="check-item" data-section="rosc-device">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">胃管</span>
+        </label>
+        <label class="check-item" data-section="rosc-device">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">直腸温計</span>
+        </label>
+        <label class="check-item" data-section="rosc-device">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">全身CT搬送を検討</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="reset-section">
+    <button class="reset-btn" onclick="resetTab('rosc')">このタブをリセット</button>
+  </div>
+</div>
+
+<!-- タブ4（物品）は削除 -->
+<div class="tab-content" id="tab-equip" style="display:none!important">
+
+  <div class="phase-complete-banner" id="done-equip">✅ 物品準備完了！</div>
+
+  <div class="section">
+    <div class="section-header"><h2>モニタリング</h2></div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-eq-monitor"></div></div>
+      <span id="sl-eq-monitor">0/5</span>
+    </div>
+    <div class="section-body">
+      <label class="check-item" data-section="eq-monitor">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">心電図モニター</span>
+      </label>
+      <label class="check-item" data-section="eq-monitor">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">SpO₂プローブ（小児）</span>
+      </label>
+      <label class="check-item" data-section="eq-monitor">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">EtCO₂モニター</span>
+      </label>
+      <label class="check-item" data-section="eq-monitor">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">NIBPカフ（乳児）</span>
+      </label>
+      <label class="check-item" data-section="eq-monitor">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">除細動器（小児パッド・4 J/kg設定）</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><h2>気道・呼吸管理 基本</h2></div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-eq-airway"></div></div>
+      <span id="sl-eq-airway">0/6</span>
+    </div>
+    <div class="section-body">
+      <label class="check-item" data-section="eq-airway">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">BVM（小児）</span>
+      </label>
+      <label class="check-item" data-section="eq-airway">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">マスク（乳児サイズ）</span>
+      </label>
+      <label class="check-item" data-section="eq-airway">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">酸素流量計・酸素チューブ</span>
+      </label>
+      <label class="check-item" data-section="eq-airway">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">吸引器</span>
+      </label>
+      <label class="check-item" data-section="eq-airway">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">吸引チューブ（10〜12Fr）</span>
+      </label>
+      <label class="check-item" data-section="eq-airway">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">口咽頭エアウェイ（乳児）</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><h2>高度気道確保</h2></div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-eq-intub"></div></div>
+      <span id="sl-eq-intub">0/7</span>
+    </div>
+    <div class="section-body">
+      <label class="check-item" data-section="eq-intub">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">喉頭鏡（マックグラス）</span>
+      </label>
+      <label class="check-item" data-section="eq-intub">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">喉頭鏡（ブレード1）</span>
+      </label>
+      <label class="check-item" data-section="eq-intub">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">挿管チューブ：ID 3.0 カフ付き</span>
+      </label>
+      <label class="check-item" data-section="eq-intub">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">挿管チューブ：ID 3.0 / 3.5 カフなし</span>
+      </label>
+      <label class="check-item" data-section="eq-intub">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">スタイレット</span>
+      </label>
+      <label class="check-item" data-section="eq-intub">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">固定テープ</span>
+      </label>
+      <label class="check-item" data-section="eq-intub">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">胃管（6〜8Fr）＋シリンジ</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><h2>人工呼吸器</h2></div>
+    <div class="section-body">
+      <label class="check-item" data-section="eq-vent">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">小児用回路</span>
+      </label>
+      <label class="check-item" data-section="eq-vent">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">加温加湿器（必要時）</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><h2>循環管理・ルート確保</h2></div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="sp-eq-circ"></div></div>
+      <span id="sl-eq-circ">0/5</span>
+    </div>
+    <div class="section-body">
+      <label class="check-item" data-section="eq-circ">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">EZ-IO（15mm針・コネクタ）</span>
+      </label>
+      <label class="check-item" data-section="eq-circ">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">末梢IV（24G）</span>
+      </label>
+      <label class="check-item" data-section="eq-circ">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">三方活栓</span>
+      </label>
+      <label class="check-item" data-section="eq-circ">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">生食500mL（メイン）</span>
+      </label>
+      <label class="check-item" data-section="eq-circ">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">シリンジ（10 / 20mL）</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><h2>薬剤</h2></div>
+    <div class="section-body">
+      <label class="check-item" data-section="eq-drug">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">アドレナリン 1mg/mL</span>
+      </label>
+      <label class="check-item" data-section="eq-drug">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">希釈用生食（1mL＋9mL）</span>
+      </label>
+      <label class="check-item" data-section="eq-drug">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">後押し生食</span>
+      </label>
+      <label class="check-item" data-section="eq-drug">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">蘇生薬一覧（10kg）印刷済み</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><h2>検査</h2></div>
+    <div class="section-body">
+      <label class="check-item" data-section="eq-exam">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">血ガス用シリンジ</span>
+      </label>
+      <label class="check-item" data-section="eq-exam">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">採血スピッツ（血算・生化・凝固・血培）</span>
+      </label>
+      <label class="check-item" data-section="eq-exam">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">ポータブルエコー（FAST）</span>
+      </label>
+      <label class="check-item" data-section="eq-exam">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">ポータブルXp</span>
+      </label>
+      <label class="check-item" data-section="eq-exam">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">血糖測定器</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><h2>体温管理・外傷評価</h2></div>
+    <div class="section-body">
+      <label class="check-item" data-section="eq-temp">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">保温ブランケット</span>
+      </label>
+      <label class="check-item" data-section="eq-temp">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">体温計（直腸温計含む）</span>
+      </label>
+      <label class="check-item" data-section="eq-temp">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">外表写真撮影端末</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><h2>ROSC後管理</h2></div>
+    <div class="section-body">
+      <label class="check-item" data-section="eq-postrosc">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">シリンジポンプ</span>
+      </label>
+      <label class="check-item" data-section="eq-postrosc">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">カテコラミン（アドレナリン・ドパミン・ノルアド）</span>
+      </label>
+      <label class="check-item" data-section="eq-postrosc">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">CVライン（乳児）</span>
+      </label>
+      <label class="check-item" data-section="eq-postrosc">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">Aラインセット</span>
+      </label>
+      <label class="check-item" data-section="eq-postrosc">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">尿カテ（6〜8Fr）</span>
+      </label>
+      <label class="check-item" data-section="eq-postrosc">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">直腸温計</span>
+      </label>
+      <label class="check-item" data-section="eq-postrosc">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">搬送用モニター・酸素</span>
+      </label>
+      <label class="check-item" data-section="eq-postrosc">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">全身CT搬送セット</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><h2>チーム運営・記録</h2></div>
+    <div class="section-body">
+      <label class="check-item" data-section="eq-team">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">蘇生記録用紙</span>
+      </label>
+      <label class="check-item" data-section="eq-team">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">タイマー</span>
+      </label>
+      <label class="check-item" data-section="eq-team">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">役割カード（リーダー・気道・CPR・薬剤・記録）</span>
+      </label>
+      <label class="check-item" data-section="eq-team">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">SAMPLE/AMPLEシート</span>
+      </label>
+      <label class="check-item" data-section="eq-team">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">家族対応スペース確保</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><h2>シミュレーション専用物品</h2></div>
+    <div class="section-body">
+      <label class="check-item" data-section="eq-sim">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">乳児マネキン（挿管可能）</span>
+      </label>
+      <label class="check-item" data-section="eq-sim">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">除細動器（トレーニングモード）</span>
+      </label>
+      <label class="check-item" data-section="eq-sim">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">IOトレーナー</span>
+      </label>
+      <label class="check-item" data-section="eq-sim">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">模擬血ガスカード</span>
+      </label>
+      <label class="check-item" data-section="eq-sim">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">iPad等（ファシリテーター用）</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="reset-section">
+    <button class="reset-btn" onclick="resetTab('equip')">このタブをリセット</button>
+  </div>
+</div>
+
+<!-- フローティングボタン -->
+<button class="fab" onclick="openModal()" title="全リセット">↺</button>
+
+<!-- モーダル -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>全チェックリストをリセット</h3>
+    <button class="modal-btn danger" onclick="resetAll()">すべてリセットする</button>
+    <button class="modal-btn cancel" onclick="closeModal()">キャンセル</button>
+  </div>
+</div>
+
+<script>
+// ===== タブ切替 =====
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + target).classList.add('active');
+  });
+});
+
+// ===== チェック処理 =====
+function getTabSections() {
+  return {
+    briefing: ['briefing-rules'],
+    pre: ['pre-goal', 'pre-role', 'pre-equip', 'pre-comm'],
+    arrival: ['arr-A', 'arr-B', 'arr-C', 'arr-D', 'arr-E', 'arr-other'],
+    rosc: ['rosc-A', 'rosc-B', 'rosc-C', 'rosc-D', 'rosc-E', 'rosc-other', 'rosc-device']
+  };
+}
+
+const tabSectionMap = {
+  'briefing-rules': 'briefing',
+  'pre-goal': 'pre', 'pre-role': 'pre', 'pre-equip': 'pre', 'pre-comm': 'pre',
+  'arr-A': 'arrival', 'arr-B': 'arrival', 'arr-C': 'arrival', 'arr-D': 'arrival', 'arr-E': 'arrival', 'arr-other': 'arrival',
+  'rosc-A': 'rosc', 'rosc-B': 'rosc', 'rosc-C': 'rosc', 'rosc-D': 'rosc', 'rosc-E': 'rosc', 'rosc-other': 'rosc', 'rosc-device': 'rosc'
+};
+
+const tabBadgeIds = { briefing: 'b0', pre: 'b1', arrival: 'b2', rosc: 'b3' };
+
+function updateSection(sectionId) {
+  const items = document.querySelectorAll(`[data-section="${sectionId}"]`);
+  const total = items.length;
+  const checked = [...items].filter(el => el.querySelector('input').checked).length;
+  const fillEl = document.getElementById('sp-' + sectionId);
+  const labelEl = document.getElementById('sl-' + sectionId);
+  if (fillEl) fillEl.style.width = total > 0 ? (checked / total * 100) + '%' : '0%';
+  if (labelEl) labelEl.textContent = checked + '/' + total;
+}
+
+function updateTabBadge(tabId) {
+  const sections = getTabSections()[tabId];
+  let total = 0, checked = 0;
+  sections.forEach(s => {
+    const items = document.querySelectorAll(`[data-section="${s}"]`);
+    total += items.length;
+    checked += [...items].filter(el => el.querySelector('input').checked).length;
+  });
+  const badge = document.getElementById(tabBadgeIds[tabId]);
+  if (badge) {
+    badge.textContent = checked + '/' + total;
+    const btn = badge.parentElement;
+    btn.classList.toggle('complete', checked === total && total > 0);
+  }
+  const banner = document.getElementById('done-' + tabId);
+  if (banner) banner.classList.toggle('show', checked === total && total > 0);
+  updateTotal();
+}
+
+function updateTotal() {
+  let total = 0, checked = 0;
+  document.querySelectorAll('.check-item input[type="checkbox"]').forEach(cb => {
+    total++;
+    if (cb.checked) checked++;
+  });
+  document.getElementById('totalFill').style.width = total > 0 ? (checked / total * 100) + '%' : '0%';
+  document.getElementById('totalLabel').textContent = checked + ' / ' + total + ' 完了';
+}
+
+document.querySelectorAll('.check-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const cb = item.querySelector('input');
+    cb.checked = !cb.checked;
+    item.classList.toggle('checked', cb.checked);
+    const section = item.dataset.section;
+    updateSection(section);
+    updateTabBadge(tabSectionMap[section]);
+    saveState();
+  });
+});
+
+// ===== 状態の保存・復元 =====
+function saveState() {
+  const state = {};
+  document.querySelectorAll('.check-item').forEach((item, i) => {
+    state[i] = item.querySelector('input').checked;
+  });
+  try { localStorage.setItem('simChecklist', JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('simChecklist') || '{}');
+    document.querySelectorAll('.check-item').forEach((item, i) => {
+      if (state[i]) {
+        item.querySelector('input').checked = true;
+        item.classList.add('checked');
+      }
+    });
+  } catch(e) {}
+  Object.keys(getTabSections()).forEach(tabId => {
+    getTabSections()[tabId].forEach(s => updateSection(s));
+    updateTabBadge(tabId);
+  });
+  updateTotal();
+}
+
+// ===== リセット =====
+function resetTab(tabId) {
+  getTabSections()[tabId].forEach(s => {
+    document.querySelectorAll(`[data-section="${s}"]`).forEach(item => {
+      item.querySelector('input').checked = false;
+      item.classList.remove('checked');
+    });
+    updateSection(s);
+  });
+  updateTabBadge(tabId);
+  saveState();
+}
+
+function resetAll() {
+  document.querySelectorAll('.check-item input').forEach(cb => cb.checked = false);
+  document.querySelectorAll('.check-item').forEach(item => item.classList.remove('checked'));
+  Object.keys(getTabSections()).forEach(tabId => {
+    getTabSections()[tabId].forEach(s => updateSection(s));
+    updateTabBadge(tabId);
+  });
+  try { localStorage.removeItem('simChecklist'); } catch(e) {}
+  closeModal();
+  updateTotal();
+}
+
+function openModal() { document.getElementById('modalOverlay').classList.add('open'); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// ===== タイマー =====
+const timers = { 0: null, 1: null, 2: null, 3: null };
+const timerSecondsLeft = { 0: 300, 1: 600, 2: 900, 3: 600 };
+
+function startTimer(id, minutes) {
+  if (timers[id]) return;
+  if (timerSecondsLeft[id] <= 0) timerSecondsLeft[id] = minutes * 60;
+  timers[id] = setInterval(() => {
+    timerSecondsLeft[id]--;
+    renderTimer(id);
+    if (timerSecondsLeft[id] <= 0) {
+      clearInterval(timers[id]);
+      timers[id] = null;
+    }
+  }, 1000);
+}
+
+function stopTimer(id) {
+  clearInterval(timers[id]);
+  timers[id] = null;
+}
+
+function resetTimer(id, minutes) {
+  stopTimer(id);
+  timerSecondsLeft[id] = minutes * 60;
+  renderTimer(id);
+  const el = document.getElementById('timer' + id);
+  if (el) { el.classList.remove('warning', 'danger'); }
+}
+
+function renderTimer(id) {
+  const el = document.getElementById('timer' + id);
+  if (!el) return;
+  const s = timerSecondsLeft[id];
+  const m = Math.floor(Math.abs(s) / 60);
+  const sec = Math.abs(s) % 60;
+  el.textContent = (s < 0 ? '-' : '') + String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+  el.className = 'timer-display' + (s <= 60 ? ' danger' : s <= 120 ? ' warning' : '');
+}
+
+// ===== 初期化 =====
+window.addEventListener('load', loadState);
+</script>
+</body>
+</html>
