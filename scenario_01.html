@@ -472,6 +472,7 @@
   <button class="tab-btn" data-tab="pre">受け入れ準備<span class="badge" id="b1">-</span></button>
   <button class="tab-btn" data-tab="arrival">病着〜ROSC<span class="badge" id="b2">-</span></button>
   <button class="tab-btn" data-tab="rosc">ROSC後<span class="badge" id="b3">-</span></button>
+  <button class="tab-btn" data-tab="review">振り返り<span class="badge" id="b4">-</span></button>
 </div>
 
 <!-- ============ タブ0: ブリーフィング ============ -->
@@ -1247,7 +1248,27 @@
   </div>
 </div>
 
-<!-- タブ4（物品）は削除 -->
+<!-- ============ タブ4: 振り返り（確認） ============ -->
+<div class="tab-content" id="tab-review">
+
+  <div class="section">
+    <div class="section-header">
+      <h2>全体の達成状況</h2>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="reviewTotalFill"></div></div>
+      <span id="reviewTotalLabel">0/0</span>
+    </div>
+  </div>
+
+  <div id="reviewBody"></div>
+
+  <div class="reset-section">
+    <button class="reset-btn" onclick="renderReview()">表示を更新</button>
+  </div>
+</div>
+
+<!-- タブ5（物品）は削除 -->
 <div class="tab-content" id="tab-equip" style="display:none!important">
 
   <div class="phase-complete-banner" id="done-equip">✅ 物品準備完了！</div>
@@ -1602,6 +1623,72 @@ const tabSectionMap = {
 
 const tabBadgeIds = { briefing: 'b0', pre: 'b1', arrival: 'b2', rosc: 'b3' };
 
+// ===== 振り返り（確認）タブ =====
+const reviewSections = [
+  { id: 'briefing-rules', label: 'ブリーフィング：進行ルール確認' },
+  { id: 'pre-goal',  label: '受け入れ準備：行動目標' },
+  { id: 'pre-role',  label: '受け入れ準備：人員確保・役割配置' },
+  { id: 'pre-equip', label: '受け入れ準備：物品準備' },
+  { id: 'pre-comm',  label: '受け入れ準備：チームコミュニケーション' },
+  { id: 'arr-A', label: '病着〜ROSC：A 気道' },
+  { id: 'arr-B', label: '病着〜ROSC：B 呼吸' },
+  { id: 'arr-C', label: '病着〜ROSC：C 循環' },
+  { id: 'arr-D', label: '病着〜ROSC：D 神経' },
+  { id: 'arr-E', label: '病着〜ROSC：E 体温・外傷' },
+  { id: 'arr-other', label: '病着〜ROSC：血液ガス・AMPLE・チーム連携' },
+  { id: 'rosc-A', label: 'ROSC後：A 気道' },
+  { id: 'rosc-B', label: 'ROSC後：B 呼吸' },
+  { id: 'rosc-C', label: 'ROSC後：C 循環' },
+  { id: 'rosc-D', label: 'ROSC後：D 神経' },
+  { id: 'rosc-E', label: 'ROSC後：E 体温・外傷' },
+  { id: 'rosc-other', label: 'ROSC後：電解質・チーム連携' },
+  { id: 'rosc-device', label: 'ROSC後：追加デバイス検討' }
+];
+
+function renderReview() {
+  const body = document.getElementById('reviewBody');
+  if (!body) return;
+  let totalAll = 0, checkedAll = 0;
+  let html = '';
+  reviewSections.forEach(sec => {
+    const items = [...document.querySelectorAll(`[data-section="${sec.id}"]`)];
+    const total = items.length;
+    const checkedItems = items.filter(el => el.querySelector('input').checked);
+    const missedItems = items.filter(el => !el.querySelector('input').checked);
+    const checked = checkedItems.length;
+    totalAll += total;
+    checkedAll += checked;
+    const complete = total > 0 && checked === total;
+    html += `<div class="section">
+      <div class="section-header">
+        <h2>${sec.label}</h2>
+        <span class="tag ${complete ? 'green' : (checked === 0 ? 'red' : 'orange')}">${checked}/${total}</span>
+      </div>
+      <div class="section-progress">
+        <div class="section-progress-bar"><div class="section-progress-fill" style="width:${total > 0 ? (checked / total * 100) : 0}%"></div></div>
+        <span>${checked}/${total} 完了</span>
+      </div>
+      <div class="section-body">`;
+    if (total === 0) {
+      html += `<div class="info-box">項目なし</div>`;
+    } else if (missedItems.length === 0) {
+      html += `<div class="info-box blue">すべて完了しています ✅</div>`;
+    } else {
+      html += `<div class="info-box red"><b>できていなかった項目（${missedItems.length}件）：</b><br>` +
+        missedItems.map(el => '・' + el.querySelector('.check-text').textContent).join('<br>') +
+        `</div>`;
+    }
+    html += `</div></div>`;
+  });
+  body.innerHTML = html;
+  const fillEl = document.getElementById('reviewTotalFill');
+  const labelEl = document.getElementById('reviewTotalLabel');
+  if (fillEl) fillEl.style.width = totalAll > 0 ? (checkedAll / totalAll * 100) + '%' : '0%';
+  if (labelEl) labelEl.textContent = checkedAll + ' / ' + totalAll + ' 完了';
+  const badge = document.getElementById('b4');
+  if (badge) badge.textContent = checkedAll + '/' + totalAll;
+}
+
 function updateSection(sectionId) {
   const items = document.querySelectorAll(`[data-section="${sectionId}"]`);
   const total = items.length;
@@ -1650,6 +1737,7 @@ document.querySelectorAll('.check-item').forEach(item => {
     updateSection(section);
     updateTabBadge(tabSectionMap[section]);
     saveState();
+    renderReview();
   });
 });
 
@@ -1677,6 +1765,7 @@ function loadState() {
     updateTabBadge(tabId);
   });
   updateTotal();
+  renderReview();
 }
 
 // ===== リセット =====
@@ -1690,6 +1779,7 @@ function resetTab(tabId) {
   });
   updateTabBadge(tabId);
   saveState();
+  renderReview();
 }
 
 function resetAll() {
@@ -1702,6 +1792,7 @@ function resetAll() {
   try { localStorage.removeItem('simChecklist'); } catch(e) {}
   closeModal();
   updateTotal();
+  renderReview();
 }
 
 function openModal() { document.getElementById('modalOverlay').classList.add('open'); }
