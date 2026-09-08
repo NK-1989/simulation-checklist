@@ -469,8 +469,9 @@
 
 <div class="tab-nav" id="tabNav">
   <button class="tab-btn active" data-tab="briefing">ブリーフィング<span class="badge" id="b0">-</span></button>
-  <button class="tab-btn" data-tab="pre">受け入れ準備<span class="badge" id="b1">-</span></button>
+  <button class="tab-btn" data-tab="pre">担当接触<span class="badge" id="b1">-</span></button>
   <button class="tab-btn" data-tab="arrest">心停止対応〜ROSC<span class="badge" id="b2">-</span></button>
+  <button class="tab-btn" data-tab="review">振り返り<span class="badge" id="b3">-</span></button>
 </div>
 
 <!-- ============ タブ0: ブリーフィング ============ -->
@@ -580,11 +581,11 @@
 
   <div class="timer-box">
     <div class="timer-label">担当接触〜心停止認識 目安時間</div>
-    <div class="timer-display" id="timer1">03:00</div>
+    <div class="timer-display" id="timer1">01:00</div>
     <div class="timer-controls">
-      <button class="timer-btn start" onclick="startTimer(1,3)">開始</button>
+      <button class="timer-btn start" onclick="startTimer(1,1)">開始</button>
       <button class="timer-btn stop" onclick="stopTimer(1)">停止</button>
-      <button class="timer-btn reset" onclick="resetTimer(1,3)">リセット</button>
+      <button class="timer-btn reset" onclick="resetTimer(1,1)">リセット</button>
     </div>
   </div>
 
@@ -813,11 +814,11 @@
 
   <div class="timer-box">
     <div class="timer-label">心停止対応〜ROSC 目安時間</div>
-    <div class="timer-display" id="timer2">25:00</div>
+    <div class="timer-display" id="timer2">10:00</div>
     <div class="timer-controls">
-      <button class="timer-btn start" onclick="startTimer(2,25)">開始</button>
+      <button class="timer-btn start" onclick="startTimer(2,10)">開始</button>
       <button class="timer-btn stop" onclick="stopTimer(2)">停止</button>
-      <button class="timer-btn reset" onclick="resetTimer(2,25)">リセット</button>
+      <button class="timer-btn reset" onclick="resetTimer(2,10)">リセット</button>
     </div>
   </div>
 
@@ -1003,6 +1004,26 @@
   </div>
 </div>
 
+<!-- ============ タブ3: 振り返り（確認） ============ -->
+<div class="tab-content" id="tab-review">
+
+  <div class="section">
+    <div class="section-header">
+      <h2>全体の達成状況</h2>
+    </div>
+    <div class="section-progress">
+      <div class="section-progress-bar"><div class="section-progress-fill" id="reviewTotalFill"></div></div>
+      <span id="reviewTotalLabel">0/0</span>
+    </div>
+  </div>
+
+  <div id="reviewBody"></div>
+
+  <div class="reset-section">
+    <button class="reset-btn" onclick="renderReview()">表示を更新</button>
+  </div>
+</div>
+
 <!-- フローティングボタン -->
 <button class="fab" onclick="openModal()" title="全リセット">↺</button>
 
@@ -1043,6 +1064,64 @@ const tabSectionMap = {
 };
 
 const tabBadgeIds = { briefing: 'b0', pre: 'b1', arrest: 'b2' };
+
+// ===== 振り返り（確認）タブ =====
+const reviewSections = [
+  { id: 'briefing-rules', label: 'ブリーフィング：進行ルール確認' },
+  { id: 'pre-goal',  label: '担当接触：行動目標' },
+  { id: 'pre-role',  label: '担当接触：心停止認識・役割配置' },
+  { id: 'pre-equip', label: '担当接触：物品準備・応援要請' },
+  { id: 'pre-comm',  label: '担当接触：チームコミュニケーション' },
+  { id: 'arr-A', label: '心停止対応：A 気道' },
+  { id: 'arr-B', label: '心停止対応：B 呼吸' },
+  { id: 'arr-C', label: '心停止対応：C 循環' },
+  { id: 'arr-D', label: '心停止対応：D 神経' },
+  { id: 'arr-E', label: '心停止対応：E 体温・外傷' }
+];
+
+function renderReview() {
+  const body = document.getElementById('reviewBody');
+  if (!body) return;
+  let totalAll = 0, checkedAll = 0;
+  let html = '';
+  reviewSections.forEach(sec => {
+    const items = [...document.querySelectorAll(`[data-section="${sec.id}"]`)];
+    const total = items.length;
+    const checkedItems = items.filter(el => el.querySelector('input').checked);
+    const missedItems = items.filter(el => !el.querySelector('input').checked);
+    const checked = checkedItems.length;
+    totalAll += total;
+    checkedAll += checked;
+    const complete = total > 0 && checked === total;
+    html += `<div class="section">
+      <div class="section-header">
+        <h2>${sec.label}</h2>
+        <span class="tag ${complete ? 'green' : (checked === 0 ? 'red' : 'orange')}">${checked}/${total}</span>
+      </div>
+      <div class="section-progress">
+        <div class="section-progress-bar"><div class="section-progress-fill" style="width:${total > 0 ? (checked / total * 100) : 0}%"></div></div>
+        <span>${checked}/${total} 完了</span>
+      </div>
+      <div class="section-body">`;
+    if (total === 0) {
+      html += `<div class="info-box">項目なし</div>`;
+    } else if (missedItems.length === 0) {
+      html += `<div class="info-box blue">すべて完了しています ✅</div>`;
+    } else {
+      html += `<div class="info-box red"><b>できていなかった項目（${missedItems.length}件）：</b><br>` +
+        missedItems.map(el => '・' + el.querySelector('.check-text').textContent).join('<br>') +
+        `</div>`;
+    }
+    html += `</div></div>`;
+  });
+  body.innerHTML = html;
+  const fillEl = document.getElementById('reviewTotalFill');
+  const labelEl = document.getElementById('reviewTotalLabel');
+  if (fillEl) fillEl.style.width = totalAll > 0 ? (checkedAll / totalAll * 100) + '%' : '0%';
+  if (labelEl) labelEl.textContent = checkedAll + ' / ' + totalAll + ' 完了';
+  const badge = document.getElementById('b3');
+  if (badge) badge.textContent = checkedAll + '/' + totalAll;
+}
 
 function updateSection(sectionId) {
   const items = document.querySelectorAll(`[data-section="${sectionId}"]`);
@@ -1092,6 +1171,7 @@ document.querySelectorAll('.check-item').forEach(item => {
     updateSection(section);
     updateTabBadge(tabSectionMap[section]);
     saveState();
+    renderReview();
   });
 });
 
@@ -1119,6 +1199,7 @@ function loadState() {
     updateTabBadge(tabId);
   });
   updateTotal();
+  renderReview();
 }
 
 // ===== リセット =====
@@ -1132,6 +1213,7 @@ function resetTab(tabId) {
   });
   updateTabBadge(tabId);
   saveState();
+  renderReview();
 }
 
 function resetAll() {
@@ -1144,6 +1226,7 @@ function resetAll() {
   try { localStorage.removeItem('simChecklist_scenario02'); } catch(e) {}
   closeModal();
   updateTotal();
+  renderReview();
 }
 
 function openModal() { document.getElementById('modalOverlay').classList.add('open'); }
@@ -1154,7 +1237,7 @@ document.getElementById('modalOverlay').addEventListener('click', e => {
 
 // ===== タイマー =====
 const timers = { 0: null, 1: null, 2: null };
-const timerSecondsLeft = { 0: 300, 1: 180, 2: 1500 };
+const timerSecondsLeft = { 0: 300, 1: 60, 2: 600 };
 
 function startTimer(id, minutes) {
   if (timers[id]) return;
