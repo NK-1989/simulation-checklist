@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>院内心停止シミュレーション チェックリスト</title>
+<title>院内心停止シミュレーション③ チェックリスト</title>
 <style>
   :root {
     --primary: #1a73e8;
@@ -458,9 +458,9 @@
 <header>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
     <a href="index.html" style="color:#fff;text-decoration:none;font-size:22px;line-height:1;padding:0 6px;border-radius:6px;background:rgba(255,255,255,0.2)">&#8592;</a>
-    <h1>院内心停止シミュレーション ②</h1>
+    <h1>院内心停止シミュレーション ③</h1>
   </div>
-  <p>1歳0か月 男児 10kg（Ns.のみ）／RSV感染症で入院後の院内CPA → ROSC</p>
+  <p>1歳0か月 男児 10kg（Ns.用）／RSV感染症で入院後の院内CPA → ROSC</p>
   <div class="total-progress">
     <div class="total-progress-fill" id="totalFill" style="width:0%"></div>
   </div>
@@ -581,11 +581,11 @@
 
   <div class="timer-box">
     <div class="timer-label">担当接触〜心停止認識 目安時間</div>
-    <div class="timer-display" id="timer1">01:00</div>
+    <div class="timer-display" id="timer1">03:00</div>
     <div class="timer-controls">
-      <button class="timer-btn start" onclick="startTimer(1,1)">開始</button>
+      <button class="timer-btn start" onclick="startTimer(1,3)">開始</button>
       <button class="timer-btn stop" onclick="stopTimer(1)">停止</button>
-      <button class="timer-btn reset" onclick="resetTimer(1,1)">リセット</button>
+      <button class="timer-btn reset" onclick="resetTimer(1,3)">リセット</button>
     </div>
   </div>
 
@@ -691,7 +691,11 @@
         <div class="subcategory-title">応援要請</div>
         <label class="check-item" data-section="pre-equip">
           <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">小児科医・新生児科医への応援要請</span>
+          <span class="check-text">小児科医への応援要請</span>
+        </label>
+        <label class="check-item" data-section="pre-equip">
+          <input type="checkbox"><div class="check-box"></div>
+          <span class="check-text">新生児科医への応援要請</span>
         </label>
         <label class="check-item" data-section="pre-equip">
           <input type="checkbox"><div class="check-box"></div>
@@ -776,10 +780,6 @@
           <input type="checkbox"><div class="check-box"></div>
           <span class="check-text">保温のためのタオル・ブランケット</span>
         </label>
-        <label class="check-item" data-section="pre-equip">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">人工呼吸器の依頼</span>
-        </label>
       </div>
     </div>
   </div>
@@ -814,16 +814,17 @@
 
   <div class="timer-box">
     <div class="timer-label">心停止対応〜ROSC 目安時間</div>
-    <div class="timer-display" id="timer2">10:00</div>
+    <div class="timer-display" id="timer2">05:00</div>
     <div class="timer-controls">
-      <button class="timer-btn start" onclick="startTimer(2,10)">開始</button>
+      <button class="timer-btn start" onclick="startTimer(2,5)">開始</button>
       <button class="timer-btn stop" onclick="stopTimer(2)">停止</button>
-      <button class="timer-btn reset" onclick="resetTimer(2,10)">リセット</button>
+      <button class="timer-btn reset" onclick="resetTimer(2,5)">リセット</button>
     </div>
   </div>
 
   <div class="info-box red">
-    <b>目標：</b>外因性院内心停止症例に対しABCDEアプローチで評価・治療介入を繰り返す。適切なアルゴリズムを意識して実践し、良好なコミュニケーションと患者家族への配慮を行う。
+    <b>目標：</b>外因性院内心停止症例に対しABCDEアプローチで評価・治療介入を繰り返す。適切なアルゴリズムを意識して実践し、良好なコミュニケーションと患者家族への配慮を行う。<br>
+    <span style="font-size:12px">＊期待される行動は、リーダーではなくチームの課題として評価する</span>
   </div>
 
   <div class="phase-complete-banner" id="done-arrest">✅ このフェーズ完了！</div>
@@ -836,7 +837,7 @@
     </div>
     <div class="section-progress">
       <div class="section-progress-bar"><div class="section-progress-fill" id="sp-arr-A"></div></div>
-      <span id="sl-arr-A">0/6</span>
+      <span id="sl-arr-A">0/2</span>
     </div>
     <div class="section-body">
       <div class="info-box">評価：口腔内は分泌物・食物残渣が多い</div>
@@ -847,22 +848,6 @@
       <label class="check-item" data-section="arr-A">
         <input type="checkbox"><div class="check-box"></div>
         <span class="check-text">徒手的気道確保</span>
-      </label>
-      <label class="check-item" data-section="arr-A">
-        <input type="checkbox"><div class="check-box"></div>
-        <span class="check-text">高度な気道確保の判断</span>
-      </label>
-      <label class="check-item" data-section="arr-A">
-        <input type="checkbox"><div class="check-box"></div>
-        <span class="check-text">挿管チューブのサイズ選択</span>
-      </label>
-      <label class="check-item" data-section="arr-A">
-        <input type="checkbox"><div class="check-box"></div>
-        <span class="check-text">CPR停止10秒以内での挿管処置</span>
-      </label>
-      <label class="check-item" data-section="arr-A">
-        <input type="checkbox"><div class="check-box"></div>
-        <span class="check-text">気管挿管成功の確認（曇り・EtCO₂・胸郭挙上・聴診）</span>
       </label>
     </div>
   </div>
@@ -875,40 +860,18 @@
     </div>
     <div class="section-progress">
       <div class="section-progress-bar"><div class="section-progress-fill" id="sp-arr-B"></div></div>
-      <span id="sl-arr-B">0/6</span>
+      <span id="sl-arr-B">0/2</span>
     </div>
     <div class="section-body">
       <div class="info-box">BVMで胸郭挙上悪い／両側肺音ごろごろ／SpO₂ 60%／自発呼吸なし</div>
-      <div class="subcategory">
-        <div class="subcategory-title">挿管前</div>
-        <label class="check-item" data-section="arr-B">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">換気回数 30:2（1人法）→ 15:2（2人法）</span>
-        </label>
-        <label class="check-item" data-section="arr-B">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">胸郭挙上の有無を確認</span>
-        </label>
-      </div>
-      <div class="subcategory">
-        <div class="subcategory-title">挿管後</div>
-        <label class="check-item" data-section="arr-B">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">適切なサイズの吸引チューブでの吸引</span>
-        </label>
-        <label class="check-item" data-section="arr-B">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">人工呼吸器への載せ替えを考慮する</span>
-        </label>
-        <label class="check-item" data-section="arr-B">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">換気回数 10回/分</span>
-        </label>
-        <label class="check-item" data-section="arr-B">
-          <input type="checkbox"><div class="check-box"></div>
-          <span class="check-text">血液ガス分析を行う</span>
-        </label>
-      </div>
+      <label class="check-item" data-section="arr-B">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">換気回数 30:2（1人法）→ 15:2（2人法）</span>
+      </label>
+      <label class="check-item" data-section="arr-B">
+        <input type="checkbox"><div class="check-box"></div>
+        <span class="check-text">胸郭挙上の有無を確認</span>
+      </label>
     </div>
   </div>
 
@@ -920,14 +883,10 @@
     </div>
     <div class="section-progress">
       <div class="section-progress-bar"><div class="section-progress-fill" id="sp-arr-C"></div></div>
-      <span id="sl-arr-C">0/7</span>
+      <span id="sl-arr-C">0/5</span>
     </div>
     <div class="section-body">
       <div class="info-box">波形：Asystole／皮膚色悪い／末梢冷感あり／CRT 10秒／CPRで上腕動脈触知あり<br>→ 3サイクルのリズムチェックでVf → 適切な除細動1回でROSC</div>
-      <label class="check-item" data-section="arr-C">
-        <input type="checkbox"><div class="check-box"></div>
-        <span class="check-text">骨髄針を躊躇しない</span>
-      </label>
       <label class="check-item" data-section="arr-C">
         <input type="checkbox"><div class="check-box"></div>
         <span class="check-text">除細動器パッドを装着する</span>
@@ -948,10 +907,6 @@
         <input type="checkbox"><div class="check-box"></div>
         <span class="check-text">適切なアルゴリズム選択（非Shockable→Shockableへ移行確認）</span>
       </label>
-      <label class="check-item" data-section="arr-C">
-        <input type="checkbox"><div class="check-box"></div>
-        <span class="check-text">FAST・Xpで心停止原因を鑑別する</span>
-      </label>
     </div>
   </div>
 
@@ -962,7 +917,7 @@
     </div>
     <div class="section-progress">
       <div class="section-progress-bar"><div class="section-progress-fill" id="sp-arr-D"></div></div>
-      <span id="sl-arr-D">0/3</span>
+      <span id="sl-arr-D">0/2</span>
     </div>
     <div class="section-body">
       <div class="info-box">JCS Ⅲ-300／GCS 3／瞳孔 4mm/4mm 対光反射緩慢だが両側みられる／大泉門膨隆なし／BS 89</div>
@@ -972,11 +927,7 @@
       </label>
       <label class="check-item" data-section="arr-D">
         <input type="checkbox"><div class="check-box"></div>
-        <span class="check-text">血糖測定を行い、補正する</span>
-      </label>
-      <label class="check-item" data-section="arr-D">
-        <input type="checkbox"><div class="check-box"></div>
-        <span class="check-text">ROSC後けいれんの有無について気を配る</span>
+        <span class="check-text">血糖測定を行う</span>
       </label>
     </div>
   </div>
@@ -1181,12 +1132,12 @@ function saveState() {
   document.querySelectorAll('.check-item').forEach((item, i) => {
     state[i] = item.querySelector('input').checked;
   });
-  try { localStorage.setItem('simChecklist_scenario02', JSON.stringify(state)); } catch(e) {}
+  try { localStorage.setItem('simChecklist_scenario03', JSON.stringify(state)); } catch(e) {}
 }
 
 function loadState() {
   try {
-    const state = JSON.parse(localStorage.getItem('simChecklist_scenario02') || '{}');
+    const state = JSON.parse(localStorage.getItem('simChecklist_scenario03') || '{}');
     document.querySelectorAll('.check-item').forEach((item, i) => {
       if (state[i]) {
         item.querySelector('input').checked = true;
@@ -1223,7 +1174,7 @@ function resetAll() {
     getTabSections()[tabId].forEach(s => updateSection(s));
     updateTabBadge(tabId);
   });
-  try { localStorage.removeItem('simChecklist_scenario02'); } catch(e) {}
+  try { localStorage.removeItem('simChecklist_scenario03'); } catch(e) {}
   closeModal();
   updateTotal();
   renderReview();
@@ -1237,7 +1188,7 @@ document.getElementById('modalOverlay').addEventListener('click', e => {
 
 // ===== タイマー =====
 const timers = { 0: null, 1: null, 2: null };
-const timerSecondsLeft = { 0: 300, 1: 60, 2: 600 };
+const timerSecondsLeft = { 0: 300, 1: 180, 2: 300 };
 
 function startTimer(id, minutes) {
   if (timers[id]) return;
